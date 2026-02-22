@@ -1,18 +1,25 @@
-{
-  "name": "psychology-test-app",
-  "version": "1.0.0",
-  "description": "나는 어떤 유형의 사람일까? - 4개 분야 심리테스트 앱",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
-  },
-  "keywords": ["psychology", "test", "HRD", "CS", "education"],
-  "license": "MIT"
-}
+# ══════════════════════════════════════════
+# 서버 설정
+# ══════════════════════════════════════════
+PORT=3000
+APP_URL=http://localhost:3000
+
+# ══════════════════════════════════════════
+# PostgreSQL (Railway는 자동 주입)
+# Railway 배포 시: DATABASE_URL은 Railway가 자동으로 설정합니다
+# 로컬 개발 시: 아래 형식으로 직접 입력하세요
+# ══════════════════════════════════════════
+DATABASE_URL=postgresql://username:password@host:5432/dbname
+
+# ══════════════════════════════════════════
+# 이메일 발송 (SMTP)
+# Gmail 예시: SMTP_HOST=smtp.gmail.com, SMTP_PORT=587
+# Gmail 앱 비밀번호: https://myaccount.google.com/apppasswords
+# Naver 예시: SMTP_HOST=smtp.naver.com, SMTP_PORT=587
+# ══════════════════════════════════════════
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM="심리테스트 <your-email@gmail.com>"
