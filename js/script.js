@@ -811,19 +811,53 @@ teach: {
 // 상태
 // ══════════════════════════════════════════
 let domain=null, domainData=null, questions=[], answers=[], current=0, scores={};
+let userInfo = { name: '', email: '' };
+
+const DOMAIN_LABELS = {
+  hrd:   'HRD (인적자원개발)',
+  cs:    'CS (고객서비스)',
+  study: '자기주도학습',
+  teach: '강의·교수법',
+};
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
 function selectDomain(d){
   domain=d; domainData=DB[d];
+  // 등록 화면으로 이동
+  const badge=document.getElementById('reg-domain-badge');
+  const icons={hrd:'💼',cs:'🎧',study:'📚',teach:'🎓'};
+  badge.textContent=icons[d]+' '+DOMAIN_LABELS[d]+' 검사';
+  badge.style.background=domainData.color+'18';
+  badge.style.border='1px solid '+domainData.color+'44';
+  badge.style.color=domainData.color;
+  document.getElementById('s-home').classList.remove('active');
+  document.getElementById('s-register').classList.add('active');
+  document.getElementById('inp-name').focus();
+}
+
+function startQuiz(){
+  const name=document.getElementById('inp-name').value.trim();
+  const email=document.getElementById('inp-email').value.trim();
+  const errEl=document.getElementById('reg-err');
+  errEl.textContent='';
+
+  if(!name){ errEl.textContent='이름을 입력해 주세요.'; return; }
+  if(!email || !email.includes('@') || !email.includes('.')){
+    errEl.textContent='올바른 이메일 주소를 입력해 주세요.'; return;
+  }
+
+  userInfo={name,email};
+
+  // 퀴즈 준비
   questions=shuffle(domainData.questions).map(q=>({q:q.q,opts:shuffle(q.opts)}));
   answers=new Array(questions.length).fill(null);
   scores={}; current=0;
-  // 색상 적용
+
   const g=`linear-gradient(135deg,${domainData.gradStart},${domainData.gradEnd})`;
   document.getElementById('prog-fill').style.background=g;
   document.getElementById('btn-next').style.background=g;
-  document.getElementById('s-home').classList.remove('active');
+  document.getElementById('s-register').classList.remove('active');
   document.getElementById('s-quiz').classList.add('active');
   document.getElementById('prog-wrap').style.display='block';
   renderQ();
@@ -901,6 +935,13 @@ function showResult(){
   document.getElementById('s-quiz').style.display='none';
   document.getElementById('prog-wrap').style.display='none';
 
+  // 축별 분석 데이터 계산 (서버 전송용)
+  const axesAnalysis=domainData.axes.map(ax=>{
+    const l=scores[ax.key]||0,r=scores[ax.opp]||0;
+    const tot=l+r||1;
+    return {...ax, leftPct:Math.round(l/tot*100)};
+  });
+
   const axHtml=domainData.axes.map(ax=>{
     const l=scores[ax.key]||0, r=scores[ax.opp]||0;
     const tot=l+r||1, lp=Math.round(l/tot*100), rp=100-lp;
@@ -928,6 +969,9 @@ function showResult(){
        <span style="font-weight:${k===key?700:400}">${t.name}</span>
      </div>`
   ).join('');
+
+  // 결과 저장 & 이메일 발송 (비동기)
+  saveAndSendEmail({key, type, axesAnalysis});
 
   document.getElementById('res-content').innerHTML=`
     <div class="res-header">
@@ -963,6 +1007,9 @@ function showResult(){
       <div class="res-sec-title">🗺️ 유형 지도</div>
       <div class="type-grid" style="${domain==='hrd'||domain==='cs'?'grid-template-columns:1fr 1fr':'grid-template-columns:1fr 1fr'}">${typesHtml}</div>
     </div>
+    <div class="email-status sending" id="email-status-box">
+      ⏳ 결과지를 <strong>${userInfo.email}</strong>으로 발송 중...
+    </div>
     <div class="share-row">
       <button class="btn-share" style="background:${g}" onclick="shareRes()">📤 결과 공유</button>
       <button class="btn-share" style="background:rgba(255,255,255,.08);color:var(--muted);border:1px solid var(--border)" onclick="goHome()">🏠 홈으로</button>
@@ -991,13 +1038,64 @@ function goHome(){
   document.getElementById('s-result').classList.remove('active');
   document.getElementById('s-quiz').style.display='block';
   document.getElementById('s-quiz').classList.remove('active');
+  document.getElementById('s-register').classList.remove('active');
   document.getElementById('s-home').classList.add('active');
+  // 입력 초기화
+  document.getElementById('inp-name').value='';
+  document.getElementById('inp-email').value='';
+  document.getElementById('reg-err').textContent='';
+  userInfo={name:'',email:''};
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function shareRes(){
   if(navigator.share){navigator.share({title:'나는 어떤 유형일까?',url:location.href});}
   else{navigator.clipboard?.writeText(location.href).then(()=>alert('링크 복사됐습니다! 📋'));}
+}
+
+async function saveAndSendEmail({key, type, axesAnalysis}){
+  const statusBox=document.getElementById('email-status-box');
+  if(!statusBox) return;
+
+  const payload={
+    name:      userInfo.name,
+    email:     userInfo.email,
+    domain,
+    domainLabel: DOMAIN_LABELS[domain],
+    typeKey:   key,
+    typeName:  type.name,
+    typeEmoji: type.emoji,
+    typeDesc:  type.desc,
+    keywords:  type.keywords,
+    strengths: type.strengths,
+    growth:    type.growth,
+    scores,
+    axesAnalysis,
+    gradStart: domainData.gradStart,
+    gradEnd:   domainData.gradEnd,
+  };
+
+  try {
+    const res = await fetch('/api/result', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if(data.ok && !data.emailError){
+      statusBox.className='email-status';
+      statusBox.innerHTML=`✅ 결과지를 <strong>${userInfo.email}</strong>으로 발송했습니다`;
+    } else if(data.ok && data.emailError){
+      statusBox.className='email-status error';
+      statusBox.innerHTML=`💾 결과는 저장됐지만 이메일 발송에 실패했습니다`;
+    } else {
+      throw new Error(data.message);
+    }
+  } catch(err){
+    statusBox.className='email-status error';
+    statusBox.innerHTML=`⚠️ 결과 저장 중 오류가 발생했습니다`;
+    console.error('saveAndSendEmail error:', err);
+  }
 }
 
 function sparkle(){

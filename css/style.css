@@ -110,3 +110,49 @@ body{font-family:'Gowun Dodum',sans-serif;background:var(--bg);color:var(--text)
 .btn-share{flex:1;padding:14px;border:none;border-radius:14px;font-family:'Black Han Sans';font-size:14px;cursor:pointer;color:#fff}
 .sparkle{position:fixed;pointer-events:none;z-index:999;width:8px;height:8px;border-radius:50%;animation:sp .6s ease-out forwards}
 @keyframes sp{0%{transform:scale(1) translate(0,0);opacity:1}100%{transform:scale(0) translate(var(--tx),var(--ty));opacity:0}}
+/* ─── 회원 정보 입력 화면 ─── */
+#s-register { padding: 0 20px; }
+.reg-wrap { padding: 32px 0 20px; }
+.reg-domain-badge {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 18px;
+  letter-spacing: .06em;
+}
+.reg-title {
+  font-family: 'Black Han Sans', sans-serif; font-size: 26px;
+  line-height: 1.4; margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff, var(--teach));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.reg-sub { font-size: 13px; color: var(--muted); margin-bottom: 30px; line-height: 1.6; }
+.reg-form { display: flex; flex-direction: column; gap: 0; }
+.reg-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+.reg-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .08em; }
+.reg-input {
+  background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+  padding: 15px 16px; font-size: 15px; color: var(--text);
+  font-family: 'Gowun Dodum', sans-serif; outline: none;
+  transition: border-color .2s;
+}
+.reg-input:focus { border-color: rgba(162,155,254,.6); }
+.reg-input::placeholder { color: var(--muted); }
+.reg-hint { font-size: 11px; color: var(--muted); padding-left: 4px; line-height: 1.5; }
+.reg-err { font-size: 12px; color: #ff6b6b; min-height: 18px; padding-left: 4px; margin-bottom: 4px; }
+.reg-submit {
+  margin-top: 4px; color: #fff;
+  background: linear-gradient(135deg, var(--teach), #fd79a8);
+}
+
+/* ─── 결과 이메일 발송 상태 ─── */
+.email-status {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(78,205,196,.08); border: 1px solid rgba(78,205,196,.25);
+  border-radius: 12px; padding: 12px 16px; font-size: 13px;
+  color: var(--study); margin-bottom: 12px;
+}
+.email-status.error {
+  background: rgba(255,107,107,.08); border-color: rgba(255,107,107,.25); color: var(--hrd);
+}
+.email-status.sending {
+  background: rgba(162,155,254,.08); border-color: rgba(162,155,254,.25); color: var(--teach);
+}
