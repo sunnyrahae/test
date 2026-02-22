@@ -920,7 +920,7 @@ function showResult(){
     `<span class="kw-tag" style="background:${domainData.color}18;border:1px solid ${domainData.color}44;color:${domainData.color};animation-delay:${i*.07}s">#${k}</span>`
   ).join('');
 
-  const adjHtml=type.adjectives.map(a=>`<strong>${a}</strong>`).join(' · ');
+  const adjHtml=type.adj.map(a=>`<strong>${a}</strong>`).join(' · ');
 
   const typesHtml=Object.entries(domainData.types).map(([k,t])=>
     `<div class="type-mini ${k===key?'hl':''}">
