@@ -1,0 +1,18 @@
+{
+  "name": "psychology-test-app",
+  "version": "1.0.0",
+  "description": "나는 어떤 유형의 사람일까? - 4개 분야 심리테스트 앱",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": ["psychology", "test", "HRD", "CS", "education"],
+  "license": "MIT"
+}
